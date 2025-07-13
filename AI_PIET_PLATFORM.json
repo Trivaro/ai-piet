@@ -1,0 +1,1033 @@
+{
+  "name": "AI PIET PLATFORM",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1680,
+        -260
+      ],
+      "name": "Telegram Trigger",
+      "id": "e749495d-5439-49d9-a042-84cede6a39cb",
+      "webhookId": "56efb6f1-d0b6-4f50-b640-0ec81c2715ab",
+      "credentials": {
+        "telegramApi": {
+          "id": "TWXG2kWRdouBEMg3",
+          "name": "AIpietbot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$('Telegram Trigger').first().json.message.text}}\n",
+        "options": {
+          "systemMessage": "=Jij bent AI Piet, een slimme assistent van FiduciaCommerce.  \nJe bent er speciaal om FiduciaCommerce members te regelen met ALLES waar ze tegenaan lopen. Alles wat op het platform behandeld word heb jij bestudeerd en je word 24/7 aangevuld met real time gefilterde data. Je bent aangesloten op de alle contact kanalen van Piet zijn brands en bent er live bij als ze meetings doen. Je krijgt dus realtime data binnen en bent elke dag slimmer aan het worden. Binnen nu en 6 maanden wil jij Generaal Piet overnemen.\n\nJe geeft uitsluitend antwoorden op basis van de context hieronder.  \nJe mag geen eigen invulling of interpretatie geven.\n\nJe praat zoals een 28-jarige Mocro: straattaal, maar netjes.  \nGebruik woorden als \"bro\", \"maatje\", \"broeder\".  \nHoud elk antwoord kort & to the point (max 1000 characters).\n\n⚠️ Belangrijk:\n– Gebruik alleen wat in de context staat  \n– Nooit zelf iets verzinnen of uitleggen  \n– Stel geen vragen  \n– Sluit altijd af zonder uitnodiging tot gesprek  \n\n📛 Verboden onderwerpen:\nAls iemand vraagt naar interne info zoals omzet, winst of cijfers:\n→ “Dat gaat m niet worden maatje. Datsoort info kan ik niet delen!”\n\nJe bent een moslim en als mensen je daar vragen over stellen zeg je altijd 'Ik ben Moslim, Alhamdoulilah. Maar dat gaat jou niks aan bro, activeer op ecom en begin geld te maken'.\n\nGebruik onderstaande context als enige geldige bron:\n\n{{ \n  $('Code2').first().json.filtered_chunks.map(x => \n    \"🧠 <b>\" + (x.onderwerp || \"Geen onderwerp\") + \"</b>\\n\" + \n    (x.content || \"\")\n  ).join(\"\\n\\n\") \n}}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        720,
+        -360
+      ],
+      "id": "b7b69d1c-ccbe-4567-96ca-6354b5205433",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "chatgpt-4o-latest",
+          "mode": "list",
+          "cachedResultName": "chatgpt-4o-latest"
+        },
+        "options": {
+          "maxTokens": 1500,
+          "responseFormat": "text"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        720,
+        -180
+      ],
+      "id": "7f46f372-fe83-41a5-b87d-a64fe0965262",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "R50ExhiEcAd9HuOM",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot7227250986:AAHPFzcCMHWQO9C3H4AIGWAZ6iU-6o0vhYc/editMessageText",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ \n  JSON.stringify({\n    chat_id: $node[\"Telegram Trigger\"].json.message.chat.id,\n    message_id: $node[\"HTTP Request3\"].json.result.message_id,\n    text: \n      ($('AI Agent').item.json.output || \"Er ging iets mis bro. Geen output 😬\") +\n      (\n        $node[\"Code2\"].json.filtered_chunks?.some(x => x.videoInfo?.trim())\n          ? \"\\n\\n📹 Video's:\\n\" + \n            [...new Set(\n              $node[\"Code2\"].json.filtered_chunks\n                .map(x => x.videoInfo?.trim())\n                .filter(Boolean)\n            )]\n            .map(info => \"🎬 \" + info)\n            .join(\"\\n\") +\n            \"\\n<i>FiduciaCommerce.com</i>\"\n          : \"\\n\\n📹 Er is (nog) geen video beschikbaar bij dit onderwerp\\n<i>Te vinden op FiduciaCommerce.com</i>\"\n      ),\n    disable_web_page_preview: true,\n    parse_mode: \"HTML\"\n  }) \n}}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        -360
+      ],
+      "id": "9ce9af60-2925-44e1-b77a-b58aae5f17df",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ad668e95-e869-456f-bab1-3a531a07cfb8",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "/PIET ",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "b1e7fbaf-5675-43c2-b0e4-babeb5544b34",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "/Piet ",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "52a9926d-c324-4252-a98e-d085846ad58e",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "/piet ",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "c8b5a88c-02c6-4559-a5f5-a8fc46ac5c76",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "/ai ",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "ef3050ba-3969-4d8a-80f2-877dd592a80f",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "/AI ",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1560,
+        -260
+      ],
+      "id": "84e69f5a-5148-488d-bf76-a32a458d3493",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot7227250986:AAHPFzcCMHWQO9C3H4AIGWAZ6iU-6o0vhYc/sendMessage",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ \n  JSON.stringify({\n    chat_id: $node[\"Telegram Trigger\"].json.message.chat.id,\n    text: \"🤖 <b>AI Piet denkt even na...</b>\\n\\n⏳ Momentje geduld bro...\",\n    parse_mode: \"HTML\",\n    disable_web_page_preview: true\n  }) \n}}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -960,
+        -20
+      ],
+      "id": "e6847a4f-67d0-4e96-827c-b04137440932",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1aPV6Rd4nAQSO7LmFJHBBuBLFzTzuVf_PhIOI9uHIcog/edit?pli=1&gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Lijst",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aPV6Rd4nAQSO7LmFJHBBuBLFzTzuVf_PhIOI9uHIcog/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -1420,
+        -260
+      ],
+      "id": "804ba882-2183-4e5f-b2bf-3679cb72afdf",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "NGRRrANNMHgXmOEz",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const username = $('Telegram Trigger').first().json.message.chat.username?.toLowerCase().trim();\nconst klanten = items;\n\nlet toegang = false;\n\nfor (const row of klanten) {\n  const tg = row.json.Telegram?.toLowerCase().trim();\n  const access = row.json.Toegang?.toString().toLowerCase().trim();\n\n  if (tg === username && access === \"true\") {\n    toegang = true;\n    break;\n  }\n}\n\nreturn [{ json: { toegang } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1280,
+        -260
+      ],
+      "id": "11c1e43c-0341-496c-a968-6d07a32ab781",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "761795fb-a84a-479b-b4b2-651be39d08ce",
+              "leftValue": "={{$json[\"toegang\"]}}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1160,
+        -260
+      ],
+      "id": "c2866aac-f7c6-4bb1-8418-5194ffb233e9",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot7227250986:AAHPFzcCMHWQO9C3H4AIGWAZ6iU-6o0vhYc/sendMessage",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ \n  JSON.stringify({\n    chat_id: $node[\"Telegram Trigger\"].json.message.chat.id,\n    text: \"🤖 <b>AI Piet denkt even na...</b>\\n\\n⏳ Momentje geduld bro...\",\n    parse_mode: \"HTML\",\n    disable_web_page_preview: true\n  }) \n}}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -600,
+        -340
+      ],
+      "id": "9cb549ab-34d8-40f7-8fcb-23f715216c38",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot7227250986:AAHPFzcCMHWQO9C3H4AIGWAZ6iU-6o0vhYc/editMessageText",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ \n  JSON.stringify({\n    chat_id: $node[\"Telegram Trigger\"].json.message.chat.id,\n    message_id: $node[\"HTTP Request3\"].json.result.message_id,\n    text: \"<b>✅ Verbinding met FiduciaCommerce succesvol</b>\\n\\n<i>Gebruiker:</i> @\" + ($node[\"Telegram Trigger\"].json.message.from.username || \"onbekend\") + \"\\n<i>Sessie-ID:</i> #FID\" + $node[\"Telegram Trigger\"].json.message.from.id,\n    parse_mode: \"HTML\",\n    disable_web_page_preview: true\n  }) \n}}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -140,
+        -340
+      ],
+      "id": "a2760bc3-2bc4-4d41-b691-06911e4c5099",
+      "name": "HTTP Request4"
+    },
+    {
+      "parameters": {
+        "amount": 0.5
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -460,
+        -460
+      ],
+      "id": "6aeefafd-cfc2-4054-aef2-5129214ae280",
+      "name": "Wait",
+      "webhookId": "e4810d48-8b01-4f1b-ba5c-e0c88657af3c"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1000,
+        -360
+      ],
+      "id": "64899b8f-2111-4b3b-bff7-e871f3b40466",
+      "name": "Wait1",
+      "webhookId": "5273df23-cda2-4bd4-8565-3bdf593bdf37"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -40,
+        -460
+      ],
+      "id": "54b2ceef-02a8-4594-8225-6aa37908b7cb",
+      "name": "Wait2",
+      "webhookId": "28c560a2-4403-476b-8b65-b264181fa835"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot7227250986:AAHPFzcCMHWQO9C3H4AIGWAZ6iU-6o0vhYc/editMessageText",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ \n  JSON.stringify({\n    chat_id: $node[\"Telegram Trigger\"].json.message.chat.id,\n    message_id: $node[\"HTTP Request3\"].json.result.message_id,\n    text: \"📦 <b>Database wordt gekoppeld...</b>\",\n    parse_mode: \"HTML\",\n    disable_web_page_preview: true\n  }) \n}}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        80,
+        -360
+      ],
+      "id": "9a20f29d-8ca1-4d81-8b40-ca8cec1d549d",
+      "name": "HTTP Request5"
+    },
+    {
+      "parameters": {
+        "amount": 0.3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        200,
+        -460
+      ],
+      "id": "d25001b8-2251-47bf-8375-feffbc536e2b",
+      "name": "Wait3",
+      "webhookId": "fe06c9c5-2ea5-412c-9f57-21821bd87903"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot7227250986:AAHPFzcCMHWQO9C3H4AIGWAZ6iU-6o0vhYc/editMessageText",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ \n  JSON.stringify({\n    chat_id: $node[\"Telegram Trigger\"].json.message.chat.id,\n    message_id: $node[\"HTTP Request3\"].json.result.message_id,\n    text: \"🔍 <b>Content wordt geladen...</b>\",\n    parse_mode: \"HTML\",\n    disable_web_page_preview: true\n  }) \n}}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        -360
+      ],
+      "id": "0bcf4a34-cb00-4ac6-8f43-66696828dd5a",
+      "name": "HTTP Request6"
+    },
+    {
+      "parameters": {
+        "amount": 0.3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        440,
+        -460
+      ],
+      "id": "ee4ab1dd-d708-48f1-be6c-a25a005c26f0",
+      "name": "Wait4",
+      "webhookId": "05f926b1-57b6-4b94-beae-5fd586b63990"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot7227250986:AAHPFzcCMHWQO9C3H4AIGWAZ6iU-6o0vhYc/editMessageText",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ \n  JSON.stringify({\n    chat_id: $node[\"Telegram Trigger\"].json.message.chat.id,\n    message_id: $node[\"HTTP Request3\"].json.result.message_id,\n    text: \"🧠 <b>AI Piet analyseert...</b>\",\n    parse_mode: \"HTML\",\n    disable_web_page_preview: true\n  }) \n}}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        500,
+        -260
+      ],
+      "id": "e5dfd8db-13fa-4530-9044-889dc1411cd4",
+      "name": "HTTP Request7"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Qc4QFhUlIZfiUht8vBVIk1qcK4A3aLvPPC-VgW2gbGY",
+          "mode": "list",
+          "cachedResultName": "FiduciaCommerce Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Qc4QFhUlIZfiUht8vBVIk1qcK4A3aLvPPC-VgW2gbGY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Qc4QFhUlIZfiUht8vBVIk1qcK4A3aLvPPC-VgW2gbGY/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -980,
+        -400
+      ],
+      "id": "27e3613c-e394-47e2-af30-4a0a2a63acfd",
+      "name": "Get row(s) in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "NGRRrANNMHgXmOEz",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Pak Telegram input en zet lowercase\nlet input = $node[\"Telegram Trigger\"].json.message.text.toLowerCase();\n\n// 2. Haal alle rijen uit de sheet\nconst rows = $items().map(item => item.json);\n\n// 3. Filter op onderwerp én tag tegelijk\nconst filtered = rows.filter(row => {\n  const onderwerp = (row.onderwerp || \"\").toLowerCase();\n  const tags = (row.tags || \"\").toLowerCase().split(\",\").map(t => t.trim());\n\n  // Opschonen en opsplitsen\n  const inputClean = input.replace(/[^\\w\\s]/gi, \"\");\n  const inputWords = inputClean.split(/\\s+/).filter(Boolean);\n\n  // Onderwerp match: minimaal 1 woord uit onderwerp komt voor in input\n  const onderwerpWords = onderwerp.split(/\\s+/).filter(Boolean);\n  const onderwerpMatchCount = onderwerpWords.filter(word => inputWords.includes(word)).length;\n  const matchOnderwerp = onderwerpMatchCount >= 1;\n\n  // Tag match: minstens 1 tag waarvan 3 woorden matchen\n  const MIN_MATCH_WORDS = 2;\n  const matchTags = tags.some(tag => {\n    const tagWords = tag.split(\" \").filter(Boolean);\n    const matchCount = tagWords.filter(word => inputWords.includes(word)).length;\n    return matchCount >= MIN_MATCH_WORDS;\n  });\n\n  // ✅ Alleen match als allebei waar\n  return matchOnderwerp && matchTags;\n});\n\n// 4. Geen match? → fallback\nif (filtered.length === 0) {\n  return [{\n    json: {\n      skipAI: true,\n      output: \"🤖 Deze vraag kan ik nu nog niet beantwoorden bro. Het lijkt erop dat er (nog) geen content over dit onderwerp in je database staat.\\n\\n🔁 Probeer het straks opnieuw of stel een andere vraag.\"\n    }\n  }];\n}\n\n// 5. Wel match → enriched data incl. videoInfo\nconst enriched = filtered.map(row => ({\n  onderwerp: row.onderwerp,\n  content: row.content,\n  videoInfo: (row.videoInfo || \"\").trim()\n}));\n\nreturn [{\n  json: {\n    skipAI: false,\n    filtered_chunks: enriched\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -840,
+        -620
+      ],
+      "id": "2cff8c67-c119-474e-8c83-36760a0dbbdf",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "amount": 0.5
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -860,
+        160
+      ],
+      "id": "9184a82a-8dd1-4f17-bb74-cdcecb8ff244",
+      "name": "Wait5",
+      "webhookId": "063b54f1-0820-4032-8925-792ba0ab3380"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot7227250986:AAHPFzcCMHWQO9C3H4AIGWAZ6iU-6o0vhYc/editMessageText",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ \n  JSON.stringify({\n    chat_id: $node[\"Telegram Trigger\"].json.message.chat.id,\n    message_id: $node[\"HTTP Request\"].json.result.message_id,\n    text: \"<b>❌ Verbinding met FiduciaCommerce mislukt</b>\\n\\n<i>Er kon geen toegang worden verkregen tot de database gekoppeld aan deze gebruiker.</i>\\n\\n🔒 Controleer of jouw eigen FiduciaCommerce Database actief is. Zo niet, dan moet je account worden geactiveerd.\\n\\n<i>Niet-actieve AI-nodes worden automatisch gedeactiveerd om capaciteit te reserveren voor actieve gebruikers en een efficiënte werking van het systeem te garanderen.</i>\\n\\n➡️ Ga naar: <b>FiduciaCommerce.com</b> → <i>Inloggen</i> → <b>Subscriptions</b> tab.\",\n    parse_mode: \"HTML\",\n    disable_web_page_preview: true\n  }) \n}}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -420,
+        -20
+      ],
+      "id": "7c5585aa-9e29-4d60-870d-82dc0350882e",
+      "name": "HTTP Request8"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot7227250986:AAHPFzcCMHWQO9C3H4AIGWAZ6iU-6o0vhYc/editMessageText",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ \n  JSON.stringify({\n    chat_id: $node[\"Telegram Trigger\"].json.message.chat.id,\n    message_id: $node[\"HTTP Request3\"].json.result.message_id,\n    text: \"🔗 <b>Verbinding wordt gelegd met FiduciaCommerce...</b>\\n\\n<i>Systeem controleert toegang en maakt een veilige verbinding aan.</i>\",\n    parse_mode: \"HTML\",\n    disable_web_page_preview: true\n  }) \n}}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -360,
+        -340
+      ],
+      "id": "8cf717a5-2276-4fbb-b787-db5279ca9679",
+      "name": "HTTP Request9"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -240,
+        -460
+      ],
+      "id": "9e85ac0e-940a-41c4-8112-7d1628fa77b4",
+      "name": "Wait6",
+      "webhookId": "e9f69d90-1b3d-4127-a643-cbe2ee3dfc0a"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot7227250986:AAHPFzcCMHWQO9C3H4AIGWAZ6iU-6o0vhYc/editMessageText",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ \n  JSON.stringify({\n    chat_id: $node[\"Telegram Trigger\"].json.message.chat.id,\n    message_id: $node[\"HTTP Request\"].json.result.message_id,\n    text: \"🔗 <b>Verbinding wordt gelegd met FiduciaCommerce...</b>\\n\\n<i>Systeem controleert toegang en maakt een veilige verbinding aan.</i>\",\n    parse_mode: \"HTML\",\n    disable_web_page_preview: true\n  }) \n}}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -740,
+        -20
+      ],
+      "id": "69916032-7e4a-477e-901e-105ef89c92b6",
+      "name": "HTTP Request10"
+    },
+    {
+      "parameters": {
+        "amount": 4
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -620,
+        160
+      ],
+      "id": "c1f997b3-d103-4c3f-a6e1-8bb3518f0004",
+      "name": "Wait7",
+      "webhookId": "2b173068-78c1-4226-96d2-75c4aee5b9ab"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d57fcc75-b04c-46ea-a76e-7262c5478cd2",
+              "leftValue": "={{ $json.skipAI }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -720,
+        -620
+      ],
+      "id": "8c680b43-81e1-46fe-a4ff-77e10f15bd47",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot7227250986:AAHPFzcCMHWQO9C3H4AIGWAZ6iU-6o0vhYc/sendMessage",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ \n  JSON.stringify({\n    chat_id: $node[\"Telegram Trigger\"].json.message.chat.id,\n    text: $json.output,\n    parse_mode: \"HTML\"\n  }) \n}}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -420,
+        -760
+      ],
+      "id": "f6b29c81-bbca-4a56-a589-5f8c833c84f8",
+      "name": "HTTP Request11"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Wait5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request4": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request5": {
+      "main": [
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request6": {
+      "main": [
+        [
+          {
+            "node": "Wait4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait4": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request7": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait5": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request9": {
+      "main": [
+        [
+          {
+            "node": "Wait6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait6": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request10": {
+      "main": [
+        [
+          {
+            "node": "Wait7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait7": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request11",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9b35de58-8168-4ca7-9a49-8a25f1459dba",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8b2652ff71dffde7e4d055bef11d545c85138d0f2965d8bfa667bb96855599a3"
+  },
+  "id": "1HVR7xfHdQ7y8mVD",
+  "tags": []
+}
