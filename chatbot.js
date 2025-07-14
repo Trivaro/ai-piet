@@ -184,7 +184,7 @@
   const chatBtn = document.createElement('button');
   chatBtn.className = 'ai-piet-chatbot-btn';
   chatBtn.setAttribute('aria-label', 'Open/close chat');
-  chatBtn.innerHTML = `<img src="pietimg.png" alt="Chatbot" />`;
+  chatBtn.innerHTML = `<img src="https://ai-piet.vercel.app/pietimg.png" alt="Chatbot" />`;
 
   // Chatbot window
   const chatWindow = document.createElement('div');
