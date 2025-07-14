@@ -161,6 +161,12 @@
       color: #fff;
       align-self: flex-end;
     }
+    .chatbot-message.typing {
+      background: #23234a;
+      color: #7c6ee6;
+      align-self: flex-start;
+      font-style: italic;
+    }
     .chatbot-input-row {
       display: flex;
       align-items: center;
@@ -199,6 +205,10 @@
     }
     .chatbot-input-row button:hover svg {
       fill: #fff;
+    }
+    .chatbot-input-row button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
     @media (max-width: 500px) {
       #chatbot-window {
@@ -252,7 +262,7 @@
     </div>
     <form class="chatbot-input-row" id="chatbot-form" autocomplete="off">
       <input type="text" id="chatbot-input" placeholder="Ask me anything..." autocomplete="off" required />
-      <button type="submit" aria-label="Verzenden">
+      <button type="submit" aria-label="Verzenden" id="send-btn">
         <svg viewBox="0 0 24 24"><path d="M2 21l21-9-21-9v7l15 2-15 2z" fill="#111"/></svg>
       </button>
     </form>
@@ -266,11 +276,17 @@
     const chatInput = document.getElementById('chatbot-input');
     const chatMessages = document.getElementById('chatbot-messages');
     const chatTypeAnim = document.getElementById('chat-type-anim');
+    const sendBtn = document.getElementById('send-btn');
+    
+    // N8N Webhook URL - VERVANG DIT MET JE EIGEN WEBHOOK URL
+    const N8N_WEBHOOK_URL = 'https://fiduciacommerce.app.n8n.cloud/webhook/chatbot';
+    
     const animText = 'Chat met Piet!';
     let animIndex = 0;
     let animDir = 1;
     let animTimeout;
     let animStopped = false;
+    
     function typeAnim() {
       if (animStopped) return;
       chatTypeAnim.textContent = animText.slice(0, animIndex);
@@ -293,6 +309,7 @@
       }
     }
     typeAnim();
+    
     // Verberg animatie als chat open gaat
     chatOpenBtn.addEventListener('click', () => {
       animStopped = true;
@@ -303,11 +320,18 @@
     // State: is chat open?
     let chatOpen = false;
 
-    // Chat altijd open bij laden
+    // Chat automatisch open op desktop, gesloten op mobiel
     window.addEventListener('DOMContentLoaded', () => {
-      chatWindow.classList.add('closed');
-      chatOpen = false;
-      chatInput.disabled = true;
+      if (window.innerWidth > 500) {
+        chatWindow.classList.remove('closed');
+        chatOpen = true;
+        chatInput.disabled = false;
+        chatInput.focus();
+      } else {
+        chatWindow.classList.add('closed');
+        chatOpen = false;
+        chatInput.disabled = true;
+      }
     });
 
     // Toggle chat open/close
@@ -330,12 +354,63 @@
       chatInput.disabled = true;
     });
 
+    // Functie om bericht naar n8n te sturen
+    async function sendMessageToN8N(message) {
+      try {
+        const response = await fetch(N8N_WEBHOOK_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: message,
+            timestamp: new Date().toISOString(),
+            userAgent: navigator.userAgent
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data.response || data.message || 'Sorry bro, er ging iets mis!';
+      } catch (error) {
+        console.error('Error sending message to n8n:', error);
+        return 'Sorry bro, er ging iets mis met de verbinding!';
+      }
+    }
+
+    // Functie om typing indicator te tonen
+    function showTypingIndicator() {
+      const typingMsg = document.createElement('div');
+      typingMsg.className = 'chatbot-message typing';
+      typingMsg.textContent = 'Ai Piet is aan het typen...';
+      typingMsg.id = 'typing-indicator';
+      chatMessages.appendChild(typingMsg);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Functie om typing indicator te verbergen
+    function hideTypingIndicator() {
+      const typingIndicator = document.getElementById('typing-indicator');
+      if (typingIndicator) {
+        typingIndicator.remove();
+      }
+    }
+
     // Send message
-    chatForm.addEventListener('submit', function(e) {
+    chatForm.addEventListener('submit', async function(e) {
       e.preventDefault();
       if (chatInput.disabled) return;
+      
       const msg = chatInput.value.trim();
       if (!msg) return;
+      
+      // Disable input en button tijdens verzenden
+      chatInput.disabled = true;
+      sendBtn.disabled = true;
+      
       // Add user message
       const userMsg = document.createElement('div');
       userMsg.className = 'chatbot-message user';
@@ -343,14 +418,39 @@
       chatMessages.appendChild(userMsg);
       chatInput.value = '';
       chatMessages.scrollTop = chatMessages.scrollHeight;
-      // Simuleer bot reactie
-      setTimeout(() => {
+      
+      // Toon typing indicator
+      showTypingIndicator();
+      
+      try {
+        // Stuur bericht naar n8n en krijg antwoord
+        const aiResponse = await sendMessageToN8N(msg);
+        
+        // Verberg typing indicator
+        hideTypingIndicator();
+        
+        // Voeg AI antwoord toe
         const botMsg = document.createElement('div');
         botMsg.className = 'chatbot-message';
-        botMsg.textContent = 'Bedankt voor je bericht! Ai Piet komt zo bij je terug.';
+        botMsg.textContent = aiResponse;
         chatMessages.appendChild(botMsg);
         chatMessages.scrollTop = chatMessages.scrollHeight;
-      }, 800);
+      } catch (error) {
+        // Verberg typing indicator
+        hideTypingIndicator();
+        
+        // Toon error bericht
+        const errorMsg = document.createElement('div');
+        errorMsg.className = 'chatbot-message';
+        errorMsg.textContent = 'Sorry bro, er ging iets mis! Probeer het later opnieuw.';
+        chatMessages.appendChild(errorMsg);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      } finally {
+        // Re-enable input en button
+        chatInput.disabled = false;
+        sendBtn.disabled = false;
+        chatInput.focus();
+      }
     });
   </script>
 </body>
