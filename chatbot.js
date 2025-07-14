@@ -1,8 +1,14 @@
-// Piet Ai Chatbot Widget - injects HTML, CSS, and JS
+// Piet Ai Chatbot Widget - exacte kopie van Piet.html
 (function() {
   // --- CSS ---
   const style = document.createElement('style');
   style.textContent = `
+    body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
     #chat-open-btn {
       position: fixed;
       bottom: 24px;
@@ -21,6 +27,7 @@
       outline: none;
       transition: background 0.2s;
       padding: 0;
+      position: fixed;
     }
     #chat-type-anim {
       position: absolute;
@@ -37,9 +44,10 @@
       white-space: nowrap;
       border-radius: 16px;
     }
-    #chat-open-btn .piet-svg {
+    #chat-open-btn img {
       width: 100%;
       height: 100%;
+      object-fit: cover;
       border-radius: 50%;
       display: block;
     }
@@ -214,7 +222,7 @@
         width: 80px;
         height: 80px;
       }
-      #chat-open-btn .piet-svg {
+      #chat-open-btn img {
         width: 100%;
         height: 100%;
       }
@@ -235,13 +243,8 @@
   chatBtn.id = 'chat-open-btn';
   chatBtn.setAttribute('aria-label', 'Open/close chat');
   chatBtn.innerHTML = `
-    <span class="piet-svg" style="width:100%;height:100%;display:block;">
-      <svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400" fill="none">
-        <rect width="400" height="400" rx="200" fill="#0f0e1a"/>
-        <image href="data:image/png;base64,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" width="320" height="320" x="40" y="40"/>
-      </svg>
-    </span>
-    <span id="chat-type-anim"></span>
+    <img src="https://ai-piet.vercel.app/pietimg.png" alt="Chatbot" />
+    <span id="chat-type-anim" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#fff;font-weight:700;font-size:1.1em;text-shadow:0 2px 8px #000,0 0 2px #000;background:rgba(0,0,0,0.25);padding:4px 10px;pointer-events:none;white-space:nowrap;"></span>
   `;
   document.body.appendChild(chatBtn);
 
@@ -271,22 +274,22 @@
 
   // --- JS Logic ---
   const chatOpenBtn = document.getElementById('chat-open-btn');
+  const chatCloseBtn = document.getElementById('chat-close');
+  const chatForm = document.getElementById('chatbot-form');
+  const chatInput = document.getElementById('chatbot-input');
+  const chatMessages = document.getElementById('chatbot-messages');
   const chatTypeAnim = document.getElementById('chat-type-anim');
-  const chatCloseBtn = chatWindow.querySelector('#chat-close');
-  const chatForm = chatWindow.querySelector('#chatbot-form');
-  const chatInput = chatWindow.querySelector('#chatbot-input');
-  const chatMessages = chatWindow.querySelector('#chatbot-messages');
-  const sendBtn = chatWindow.querySelector('#send-btn');
-
-  // N8N Webhook URL
+  const sendBtn = document.getElementById('send-btn');
+  
+  // N8N Webhook URL - VERVANG DIT MET JE EIGEN WEBHOOK URL
   const N8N_WEBHOOK_URL = 'https://fiduciacommerce.app.n8n.cloud/webhook/chatbot';
-
+  
   const animText = 'Chat met Piet!';
   let animIndex = 0;
   let animDir = 1;
   let animTimeout;
   let animStopped = false;
-
+  
   function typeAnim() {
     if (animStopped) return;
     chatTypeAnim.textContent = animText.slice(0, animIndex);
@@ -299,7 +302,7 @@
         animTimeout = setTimeout(typeAnim, 900);
       }
     } else {
-      if (animIndex > 9) {
+      if (animIndex > 9) { // laat 'Chat met' staan
         animIndex--;
         animTimeout = setTimeout(typeAnim, 60);
       } else {
@@ -309,7 +312,7 @@
     }
   }
   typeAnim();
-
+  
   // Verberg animatie als chat open gaat
   chatOpenBtn.addEventListener('click', () => {
     animStopped = true;
@@ -368,9 +371,11 @@
           userAgent: navigator.userAgent
         })
       });
+      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
+      
       const data = await response.json();
       return data.response || data.message || 'Sorry bro, er ging iets mis!';
     } catch (error) {
@@ -401,33 +406,50 @@
   chatForm.addEventListener('submit', async function(e) {
     e.preventDefault();
     if (chatInput.disabled) return;
+    
     const msg = chatInput.value.trim();
     if (!msg) return;
+    
+    // Disable input en button tijdens verzenden
     chatInput.disabled = true;
     sendBtn.disabled = true;
+    
+    // Add user message
     const userMsg = document.createElement('div');
     userMsg.className = 'chatbot-message user';
     userMsg.textContent = msg;
     chatMessages.appendChild(userMsg);
     chatInput.value = '';
     chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    // Toon typing indicator
     showTypingIndicator();
+    
     try {
+      // Stuur bericht naar n8n en krijg antwoord
       const aiResponse = await sendMessageToN8N(msg);
+      
+      // Verberg typing indicator
       hideTypingIndicator();
+      
+      // Voeg AI antwoord toe
       const botMsg = document.createElement('div');
       botMsg.className = 'chatbot-message';
       botMsg.textContent = aiResponse;
       chatMessages.appendChild(botMsg);
       chatMessages.scrollTop = chatMessages.scrollHeight;
     } catch (error) {
+      // Verberg typing indicator
       hideTypingIndicator();
+      
+      // Toon error bericht
       const errorMsg = document.createElement('div');
       errorMsg.className = 'chatbot-message';
       errorMsg.textContent = 'Sorry bro, er ging iets mis! Probeer het later opnieuw.';
       chatMessages.appendChild(errorMsg);
       chatMessages.scrollTop = chatMessages.scrollHeight;
     } finally {
+      // Re-enable input en button
       chatInput.disabled = false;
       sendBtn.disabled = false;
       chatInput.focus();
