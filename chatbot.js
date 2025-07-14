@@ -199,7 +199,7 @@
       <span class="chatbot-status"><span class="chatbot-status-dot"></span>Online</span>
     </div>
     <div class="chatbot-header-icons">
-      <button id="chat-refresh" title="Vernieuwen">&#x21bb;</button>
+      <button id="chat-close" title="Sluiten">&#x2715;</button>
     </div>
   `;
 
@@ -235,7 +235,7 @@
   // --- Functionaliteit ---
   let chatOpen = true;
   const input = form.querySelector('input');
-  const refreshBtn = header.querySelector('#chat-refresh');
+  const closeBtn = header.querySelector('#chat-close');
 
   // Chat altijd open bij laden
   chatWindow.classList.remove('closed');
@@ -256,13 +256,11 @@
     }
   });
 
-  // Refresh (reset chat)
-  refreshBtn.addEventListener('click', () => {
-    messages.innerHTML = '';
-    const firstMsg = document.createElement('div');
-    firstMsg.className = 'chatbot-message';
-    firstMsg.textContent = 'Hi! What can I help you with?';
-    messages.appendChild(firstMsg);
+  // Close chat when X button is clicked
+  closeBtn.addEventListener('click', () => {
+    chatOpen = false;
+    chatWindow.classList.add('closed');
+    input.disabled = true;
   });
 
   // Berichten sturen
