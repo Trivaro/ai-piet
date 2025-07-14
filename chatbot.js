@@ -137,7 +137,7 @@
     }
     .chatbot-messages {
       flex: 1;
-      padding: 24px 16px 0 16px;
+      padding: 24px 16px 24px 16px;
       background: #18182a;
       overflow-y: auto;
       display: flex;
