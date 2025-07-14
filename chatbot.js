@@ -7,9 +7,9 @@
       position: fixed;
       bottom: 24px;
       right: 24px;
-      width: 56px;
-      height: 56px;
-      background: #b08a19;
+      width: 80px;
+      height: 80px;
+      background: none;
       border-radius: 50%;
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
       display: flex;
@@ -21,11 +21,12 @@
       outline: none;
       transition: background 0.2s;
       padding: 0;
+      position: fixed;
     }
     .ai-piet-chatbot-btn img {
-      width: 32px;
-      height: 32px;
-      object-fit: contain;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
       border-radius: 50%;
       display: block;
     }
@@ -163,17 +164,46 @@
     .chatbot-input-row button:hover svg {
       fill: #b6f09c;
     }
+    .chat-type-anim {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%,-50%);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.1em;
+      text-shadow: 0 2px 8px #000,0 0 2px #000;
+      background: rgba(0,0,0,0.25);
+      padding: 4px 10px;
+      pointer-events: none;
+      white-space: nowrap;
+      border-radius: 16px;
+    }
     @media (max-width: 500px) {
       .ai-piet-chatbot-window {
         width: 98vw;
         height: 80vh;
         min-width: 0;
         right: 1vw;
-        bottom: 1vw;
+        bottom: 17vw;
       }
       .ai-piet-chatbot-btn {
-        right: 1vw;
-        bottom: 1vw;
+        right: 7vw;
+        bottom: 7vw;
+        width: 80px;
+        height: 80px;
+      }
+      .ai-piet-chatbot-btn img {
+        width: 100%;
+        height: 100%;
+      }
+      .chat-type-anim {
+        font-size: 0.95em;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%,-50%);
+        white-space: nowrap;
+        border-radius: 16px;
       }
     }
   `;
@@ -185,6 +215,10 @@
   chatBtn.className = 'ai-piet-chatbot-btn';
   chatBtn.setAttribute('aria-label', 'Open/close chat');
   chatBtn.innerHTML = `<img src="https://ai-piet.vercel.app/pietimg.png" alt="Chatbot" />`;
+  // Type animatie
+  const typeAnimSpan = document.createElement('span');
+  typeAnimSpan.className = 'chat-type-anim';
+  chatBtn.appendChild(typeAnimSpan);
 
   // Chatbot window
   const chatWindow = document.createElement('div');
@@ -233,9 +267,43 @@
   document.body.appendChild(chatWindow);
 
   // --- Functionaliteit ---
-  let chatOpen = true;
+  let chatOpen = false;
   const input = form.querySelector('input');
   const closeBtn = header.querySelector('#chat-close');
+  // Type animatie logica
+  const animText = 'Chat met Piet!';
+  let animIndex = 0;
+  let animDir = 1;
+  let animTimeout;
+  let animStopped = false;
+  function typeAnim() {
+    if (animStopped) return;
+    typeAnimSpan.textContent = animText.slice(0, animIndex);
+    if (animDir === 1) {
+      if (animIndex < animText.length) {
+        animIndex++;
+        animTimeout = setTimeout(typeAnim, 90);
+      } else {
+        animDir = -1;
+        animTimeout = setTimeout(typeAnim, 900);
+      }
+    } else {
+      if (animIndex > 9) { // laat 'Chat met' staan
+        animIndex--;
+        animTimeout = setTimeout(typeAnim, 60);
+      } else {
+        animDir = 1;
+        animTimeout = setTimeout(typeAnim, 700);
+      }
+    }
+  }
+  typeAnim();
+  // Verberg animatie als chat open gaat
+  chatBtn.addEventListener('click', () => {
+    animStopped = true;
+    clearTimeout(animTimeout);
+    typeAnimSpan.style.display = 'none';
+  });
 
   // Chat altijd open bij laden
   chatWindow.classList.remove('closed');

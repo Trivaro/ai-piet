@@ -15,9 +15,9 @@
       position: fixed;
       bottom: 24px;
       right: 24px;
-      width: 56px;
-      height: 56px;
-      background: #b08a19;
+      width: 80px;
+      height: 80px;
+      background: none;
       border-radius: 50%;
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
       display: flex;
@@ -29,11 +29,27 @@
       outline: none;
       transition: background 0.2s;
       padding: 0;
+      position: fixed;
+    }
+    #chat-type-anim {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%,-50%);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.1em;
+      text-shadow: 0 2px 8px #000,0 0 2px #000;
+      background: rgba(0,0,0,0.25);
+      padding: 4px 10px;
+      pointer-events: none;
+      white-space: nowrap;
+      border-radius: 16px;
     }
     #chat-open-btn img {
-      width: 32px;
-      height: 32px;
-      object-fit: contain;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
       border-radius: 50%;
       display: block;
     }
@@ -42,11 +58,11 @@
     }
     #chatbot-window {
       position: fixed;
-      bottom: 24px;
+      bottom: 120px;
       right: 24px;
       width: 370px;
       height: 600px;
-      background: #fff;
+      background: url('https://ai-piet.vercel.app/pietimg.png') center center/cover no-repeat;
       border-radius: 16px;
       box-shadow: 0 8px 32px rgba(0,0,0,0.45);
       display: flex;
@@ -57,6 +73,17 @@
       opacity: 1;
       pointer-events: auto;
       transform: translateY(0);
+    }
+    #chatbot-window::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(20,20,20,0.55);
+      z-index: 0;
+    }
+    .chatbot-header, .chatbot-messages, .chatbot-input-row {
+      position: relative;
+      z-index: 1;
     }
     #chatbot-window.closed {
       opacity: 0;
@@ -177,11 +204,25 @@
         height: 80vh;
         min-width: 0;
         right: 1vw;
-        bottom: 1vw;
+        bottom: 17vw;
       }
       #chat-open-btn {
-        right: 1vw;
-        bottom: 1vw;
+        right: 7vw;
+        bottom: 7vw;
+        width: 80px;
+        height: 80px;
+      }
+      #chat-open-btn img {
+        width: 100%;
+        height: 100%;
+      }
+      #chat-type-anim {
+        font-size: 0.95em;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%,-50%);
+        white-space: nowrap;
+        border-radius: 16px;
       }
     }
   </style>
@@ -189,7 +230,8 @@
 <body>
   <!-- Floating chat open/close button -->
   <button id="chat-open-btn" aria-label="Open/close chat">
-    <img src="pietimg.png" alt="Chatbot" />
+    <img src="https://ai-piet.vercel.app/pietimg.png" alt="Chatbot" />
+    <span id="chat-type-anim" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#fff;font-weight:700;font-size:1.1em;text-shadow:0 2px 8px #000,0 0 2px #000;background:rgba(0,0,0,0.25);padding:4px 10px;pointer-events:none;white-space:nowrap;"></span>
   </button>
 
   <!-- Chatbot window -->
@@ -221,16 +263,49 @@
     const chatForm = document.getElementById('chatbot-form');
     const chatInput = document.getElementById('chatbot-input');
     const chatMessages = document.getElementById('chatbot-messages');
+    const chatTypeAnim = document.getElementById('chat-type-anim');
+    const animText = 'Chat met Piet!';
+    let animIndex = 0;
+    let animDir = 1;
+    let animTimeout;
+    let animStopped = false;
+    function typeAnim() {
+      if (animStopped) return;
+      chatTypeAnim.textContent = animText.slice(0, animIndex);
+      if (animDir === 1) {
+        if (animIndex < animText.length) {
+          animIndex++;
+          animTimeout = setTimeout(typeAnim, 90);
+        } else {
+          animDir = -1;
+          animTimeout = setTimeout(typeAnim, 900);
+        }
+      } else {
+        if (animIndex > 9) { // laat 'Chat met' staan
+          animIndex--;
+          animTimeout = setTimeout(typeAnim, 60);
+        } else {
+          animDir = 1;
+          animTimeout = setTimeout(typeAnim, 700);
+        }
+      }
+    }
+    typeAnim();
+    // Verberg animatie als chat open gaat
+    chatOpenBtn.addEventListener('click', () => {
+      animStopped = true;
+      clearTimeout(animTimeout);
+      chatTypeAnim.style.display = 'none';
+    });
 
     // State: is chat open?
-    let chatOpen = true;
+    let chatOpen = false;
 
     // Chat altijd open bij laden
     window.addEventListener('DOMContentLoaded', () => {
-      chatWindow.classList.remove('closed');
-      chatOpen = true;
-      chatInput.disabled = false;
-      chatInput.focus();
+      chatWindow.classList.add('closed');
+      chatOpen = false;
+      chatInput.disabled = true;
     });
 
     // Toggle chat open/close
