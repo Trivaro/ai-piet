@@ -261,10 +261,10 @@
       </div>
     </div>
     <div class="chatbot-messages" id="chatbot-messages">
-      <div class="chatbot-message">Hi! What can I help you with?</div>
+      <div class="chatbot-message">Hallo! Waar kan ik je mee helpen?</div>
     </div>
     <form class="chatbot-input-row" id="chatbot-form" autocomplete="off">
-      <input type="text" id="chatbot-input" placeholder="Ask me anything..." autocomplete="off" required />
+      <input type="text" id="chatbot-input" placeholder="Vraag me alles..." autocomplete="off" required />
       <button type="submit" aria-label="Verzenden" id="send-btn">
         <svg viewBox="0 0 24 24"><path d="M2 21l21-9-21-9v7l15 2-15 2z" fill="#111"/></svg>
       </button>
