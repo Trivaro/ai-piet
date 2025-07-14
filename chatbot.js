@@ -1,4 +1,4 @@
-// Ai Piet Standalone Chatbot Widget
+// Ai Piet Standalone Chatbot Widget met afbeelding als knop
 (function() {
   // --- CSS ---
   const style = document.createElement('style');
@@ -9,7 +9,7 @@
       right: 24px;
       width: 56px;
       height: 56px;
-      background: #111;
+      background: #b08a19;
       border-radius: 50%;
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
       display: flex;
@@ -20,15 +20,17 @@
       border: 2px solid #fff;
       outline: none;
       transition: background 0.2s;
+      padding: 0;
     }
-    .ai-piet-chatbot-btn:hover {
-      background: #222;
-    }
-    .ai-piet-chatbot-btn svg {
+    .ai-piet-chatbot-btn img {
       width: 32px;
       height: 32px;
-      fill: #fff;
+      object-fit: contain;
+      border-radius: 50%;
       display: block;
+    }
+    .ai-piet-chatbot-btn:hover {
+      background: #a07a10;
     }
     .ai-piet-chatbot-window {
       position: fixed;
@@ -53,7 +55,7 @@
       pointer-events: none;
       transform: translateY(40px);
     }
-    .ai-piet-chatbot-header {
+    .chatbot-header {
       background: #111;
       color: #fff;
       padding: 18px 20px 12px 20px;
@@ -62,19 +64,19 @@
       justify-content: space-between;
       border-bottom: 1px solid #444;
     }
-    .ai-piet-chatbot-title {
+    .chatbot-title {
       font-size: 1.2em;
       font-weight: 600;
       letter-spacing: 0.5px;
     }
-    .ai-piet-chatbot-status {
+    .chatbot-status {
       font-size: 0.95em;
       color: #b6f09c;
       margin-left: 8px;
       display: flex;
       align-items: center;
     }
-    .ai-piet-chatbot-status-dot {
+    .chatbot-status-dot {
       width: 9px;
       height: 9px;
       background: #b6f09c;
@@ -82,11 +84,11 @@
       display: inline-block;
       margin-right: 5px;
     }
-    .ai-piet-chatbot-header-icons {
+    .chatbot-header-icons {
       display: flex;
       gap: 14px;
     }
-    .ai-piet-chatbot-header-icons button {
+    .chatbot-header-icons button {
       background: none;
       border: none;
       color: #fff;
@@ -95,10 +97,10 @@
       opacity: 0.7;
       transition: opacity 0.2s;
     }
-    .ai-piet-chatbot-header-icons button:hover {
+    .chatbot-header-icons button:hover {
       opacity: 1;
     }
-    .ai-piet-chatbot-messages {
+    .chatbot-messages {
       flex: 1;
       padding: 24px 16px 0 16px;
       background: #fff;
@@ -107,7 +109,7 @@
       flex-direction: column;
       gap: 12px;
     }
-    .ai-piet-chatbot-message {
+    .chatbot-message {
       background: #111;
       color: #fff;
       padding: 12px 16px;
@@ -117,19 +119,19 @@
       box-shadow: 0 1px 4px rgba(0,0,0,0.08);
       word-break: break-word;
     }
-    .ai-piet-chatbot-message.user {
+    .chatbot-message.user {
       background: #111;
       color: #fff;
       align-self: flex-end;
     }
-    .ai-piet-chatbot-input-row {
+    .chatbot-input-row {
       display: flex;
       align-items: center;
       padding: 12px 14px;
       background: #111;
       border-top: 1px solid #444;
     }
-    .ai-piet-chatbot-input-row input {
+    .chatbot-input-row input {
       flex: 1;
       padding: 10px 14px;
       border-radius: 20px;
@@ -140,10 +142,10 @@
       outline: none;
       margin-right: 10px;
     }
-    .ai-piet-chatbot-input-row input::placeholder {
+    .chatbot-input-row input::placeholder {
       color: #bbb;
     }
-    .ai-piet-chatbot-input-row button {
+    .chatbot-input-row button {
       background: none;
       border: none;
       cursor: pointer;
@@ -151,14 +153,14 @@
       display: flex;
       align-items: center;
     }
-    .ai-piet-chatbot-input-row button svg {
+    .chatbot-input-row button svg {
       width: 28px;
       height: 28px;
       fill: #111;
       transition: fill 0.2s;
       display: block;
     }
-    .ai-piet-chatbot-input-row button:hover svg {
+    .chatbot-input-row button:hover svg {
       fill: #b6f09c;
     }
     @media (max-width: 500px) {
@@ -182,9 +184,7 @@
   const chatBtn = document.createElement('button');
   chatBtn.className = 'ai-piet-chatbot-btn';
   chatBtn.setAttribute('aria-label', 'Open/close chat');
-  chatBtn.innerHTML = `
-    <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#111"/><rect x="10" y="12" width="20" height="12" rx="6" fill="#fff"/><circle cx="16" cy="18" r="2" fill="#111"/><circle cx="20" cy="18" r="2" fill="#111"/><circle cx="24" cy="18" r="2" fill="#111"/></svg>
-  `;
+  chatBtn.innerHTML = `<img src="pietimg.png" alt="Chatbot" />`;
 
   // Chatbot window
   const chatWindow = document.createElement('div');
@@ -192,32 +192,32 @@
 
   // Header
   const header = document.createElement('div');
-  header.className = 'ai-piet-chatbot-header';
+  header.className = 'chatbot-header';
   header.innerHTML = `
     <div>
-      <span class="ai-piet-chatbot-title">Ai Piet</span><br>
-      <span class="ai-piet-chatbot-status"><span class="ai-piet-chatbot-status-dot"></span>Online</span>
+      <span class="chatbot-title">Ai Piet</span><br>
+      <span class="chatbot-status"><span class="chatbot-status-dot"></span>Online</span>
     </div>
-    <div class="ai-piet-chatbot-header-icons">
-      <button id="ai-piet-chatbot-refresh" title="Vernieuwen">&#x21bb;</button>
+    <div class="chatbot-header-icons">
+      <button id="chat-refresh" title="Vernieuwen">&#x21bb;</button>
     </div>
   `;
 
   // Messages
   const messages = document.createElement('div');
-  messages.className = 'ai-piet-chatbot-messages';
+  messages.className = 'chatbot-messages';
   // Eerste bericht
   const firstMsg = document.createElement('div');
-  firstMsg.className = 'ai-piet-chatbot-message';
+  firstMsg.className = 'chatbot-message';
   firstMsg.textContent = 'Hi! What can I help you with?';
   messages.appendChild(firstMsg);
 
   // Input row
   const form = document.createElement('form');
-  form.className = 'ai-piet-chatbot-input-row';
+  form.className = 'chatbot-input-row';
   form.setAttribute('autocomplete', 'off');
   form.innerHTML = `
-    <input type="text" id="ai-piet-chatbot-input" placeholder="Ask me anything..." autocomplete="off" required />
+    <input type="text" id="chatbot-input" placeholder="Ask me anything..." autocomplete="off" required />
     <button type="submit" aria-label="Verzenden">
       <svg viewBox="0 0 24 24"><path d="M2 21l21-9-21-9v7l15 2-15 2z" fill="#111"/></svg>
     </button>
@@ -235,7 +235,7 @@
   // --- Functionaliteit ---
   let chatOpen = true;
   const input = form.querySelector('input');
-  const refreshBtn = header.querySelector('#ai-piet-chatbot-refresh');
+  const refreshBtn = header.querySelector('#chat-refresh');
 
   // Chat altijd open bij laden
   chatWindow.classList.remove('closed');
@@ -260,7 +260,7 @@
   refreshBtn.addEventListener('click', () => {
     messages.innerHTML = '';
     const firstMsg = document.createElement('div');
-    firstMsg.className = 'ai-piet-chatbot-message';
+    firstMsg.className = 'chatbot-message';
     firstMsg.textContent = 'Hi! What can I help you with?';
     messages.appendChild(firstMsg);
   });
@@ -273,7 +273,7 @@
     if (!msg) return;
     // User message
     const userMsg = document.createElement('div');
-    userMsg.className = 'ai-piet-chatbot-message user';
+    userMsg.className = 'chatbot-message user';
     userMsg.textContent = msg;
     messages.appendChild(userMsg);
     input.value = '';
@@ -281,7 +281,7 @@
     // Simuleer bot reactie
     setTimeout(() => {
       const botMsg = document.createElement('div');
-      botMsg.className = 'ai-piet-chatbot-message';
+      botMsg.className = 'chatbot-message';
       botMsg.textContent = 'Bedankt voor je bericht! Ai Piet komt zo bij je terug.';
       messages.appendChild(botMsg);
       messages.scrollTop = messages.scrollHeight;
