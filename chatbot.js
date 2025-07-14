@@ -35,11 +35,11 @@
     }
     .ai-piet-chatbot-window {
       position: fixed;
-      bottom: 24px;
+      bottom: 120px;
       right: 24px;
       width: 370px;
       height: 600px;
-      background: #fff;
+      background: #18182a;
       border-radius: 16px;
       box-shadow: 0 8px 32px rgba(0,0,0,0.45);
       display: flex;
@@ -57,7 +57,7 @@
       transform: translateY(40px);
     }
     .chatbot-header {
-      background: #111;
+      background: #23234a;
       color: #fff;
       padding: 18px 20px 12px 20px;
       display: flex;
@@ -72,7 +72,7 @@
     }
     .chatbot-status {
       font-size: 0.95em;
-      color: #b6f09c;
+      color: #7c6ee6;
       margin-left: 8px;
       display: flex;
       align-items: center;
@@ -80,7 +80,7 @@
     .chatbot-status-dot {
       width: 9px;
       height: 9px;
-      background: #b6f09c;
+      background: #7c6ee6;
       border-radius: 50%;
       display: inline-block;
       margin-right: 5px;
@@ -100,18 +100,19 @@
     }
     .chatbot-header-icons button:hover {
       opacity: 1;
+      color: #7c6ee6;
     }
     .chatbot-messages {
       flex: 1;
       padding: 24px 16px 0 16px;
-      background: #fff;
+      background: #18182a;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
     .chatbot-message {
-      background: #111;
+      background: #23234a;
       color: #fff;
       padding: 12px 16px;
       border-radius: 10px;
@@ -121,7 +122,7 @@
       word-break: break-word;
     }
     .chatbot-message.user {
-      background: #111;
+      background: #7c6ee6;
       color: #fff;
       align-self: flex-end;
     }
@@ -129,7 +130,7 @@
       display: flex;
       align-items: center;
       padding: 12px 14px;
-      background: #111;
+      background: #23234a;
       border-top: 1px solid #444;
     }
     .chatbot-input-row input {
@@ -137,14 +138,14 @@
       padding: 10px 14px;
       border-radius: 20px;
       border: none;
-      background: #fff;
-      color: #111;
+      background: #23234a;
+      color: #fff;
       font-size: 1em;
       outline: none;
       margin-right: 10px;
     }
     .chatbot-input-row input::placeholder {
-      color: #bbb;
+      color: #bcbcf0;
     }
     .chatbot-input-row button {
       background: none;
@@ -157,12 +158,12 @@
     .chatbot-input-row button svg {
       width: 28px;
       height: 28px;
-      fill: #111;
+      fill: #7c6ee6;
       transition: fill 0.2s;
       display: block;
     }
     .chatbot-input-row button:hover svg {
-      fill: #b6f09c;
+      fill: #fff;
     }
     .chat-type-anim {
       position: absolute;
