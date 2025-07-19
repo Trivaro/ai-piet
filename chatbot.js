@@ -323,18 +323,11 @@
   // State: is chat open?
   let chatOpen = false;
 
-  // Chat automatisch open op desktop, gesloten op mobiel
+  // Chat altijd gesloten bij het laden van de pagina (zowel desktop als mobiel)
   window.addEventListener('DOMContentLoaded', () => {
-    if (window.innerWidth > 500) {
-      chatWindow.classList.remove('closed');
-      chatOpen = true;
-      chatInput.disabled = false;
-      chatInput.focus();
-    } else {
-      chatWindow.classList.add('closed');
-      chatOpen = false;
-      chatInput.disabled = true;
-    }
+    chatWindow.classList.add('closed');
+    chatOpen = false;
+    chatInput.disabled = true;
   });
 
   // Toggle chat open/close
